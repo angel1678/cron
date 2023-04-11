@@ -1,0 +1,21 @@
+{
+  "name": "bot-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dayjs": "^1.11.7",
+    "dotenv": "^16.0.3",
+    "mysql": "^2.18.1",
+    "node-cron": "^3.0.2",
+    "nodemailer": "^6.9.1",
+    "puppeteer": "^19.6.2",
+    "uuid-by-string": "^4.0.0"
+  }
+}
