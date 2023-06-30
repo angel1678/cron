@@ -1,21 +1,21 @@
 const mysql = require('mysql');
 
 const conn = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : '',
-    database : 'botweb'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 });
 
 const select = (sql, values = []) => {
     return new Promise((resolve, reject) => {
-        conn.query({sql, values}, (error, results, fields) => {
+        conn.query({ sql, values }, (error, results, fields) => {
             if (error) {
                 return reject(error);
             }
             resolve(results);
         });
-    }); 
+    });
 }
 
 const insert = (table, data) => {
@@ -26,7 +26,7 @@ const insert = (table, data) => {
             }
             resolve(results);
         });
-    }); 
+    });
 }
 
 const getKeysFormat = (values) => {
@@ -54,7 +54,7 @@ const update = (table, values = {}, conditions = {}) => {
             }
             resolve(results);
         });
-    }); 
+    });
 }
 
 module.exports = {
