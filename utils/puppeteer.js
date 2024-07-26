@@ -1,6 +1,5 @@
 const getUUID = require('uuid-by-string');
 const puppeteer = require('puppeteer');
-const nodemailer = require('nodemailer');
 const log4js = require("log4js");
 
 const dayjs = require('dayjs');
@@ -14,16 +13,6 @@ dayjs.extend(customParseFormat);
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
-const transporter = nodemailer.createTransport({
-    host: process.env.MAIL_HOST,
-    port: process.env.MAIL_PORT,
-    secure: process.env.MAIL_SECURE === 'true',
-    auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASS,
-    }
-});
-
 const dateFormat = (fecha) => {
     const value = fecha ? dayjs(fecha, 'DD/MM/YYYY HH:mm') : dayjs().tz('America/Guayaquil');
     return value.format('YYYY-MM-DD HH:mm:ss');
@@ -36,7 +25,7 @@ const procesarDetalle = async (procesos = []) => {
 
     for (const { proceso_id, judicatura_id, anio_id, numero_id, user_id } of procesos) {
         try {
-            await page.goto('https://procesosjudiciales.funcionjudicial.gob.ec/expel-busqueda-avanzada', { waitUntil: 'domcontentloaded' });
+            await page.goto(process.env.PAGE_URL, { waitUntil: 'domcontentloaded' });
             logger.info(`Iniciado - ID: ${proceso_id}.`);
 
             const inputSearch = await page.$("input[formcontrolname='numeroCausa']");
@@ -114,22 +103,8 @@ const procesarDetalle = async (procesos = []) => {
                 }
 
                 const [detalle] = await select(`SELECT * FROM procesos_detalle WHERE movimiento_id = ? ORDER BY fecha DESC limit 1`, [movimiento_id]);
-                const [movimiento] = await select(`SELECT * FROM procesos_movimiento WHERE id = ?`, [movimiento_id]);
-                const [user] = await select(`SELECT * FROM users WHERE id = ?`, [user_id]);
                 if (detalle && !detalle.sended_at) {
-                    const fecha = dayjs(detalle.fecha).format('YYYY-MM-DD HH:mm:ss');
-                    const demandados = movimiento.demandado_procesado.replace('\n', ', ');
-                    const info = await transporter.sendMail({
-                        from: `"Admin" <${process.env.MAIL_USER}>`,
-                        to: user.email,
-                        subject: `${proceso} - ${fecha} - ${detalle.titulo} - ${movimiento.dependencia_jurisdiccional} - ${movimiento.accion_infraccion}`,
-                        html: `<div><div><b>Demandado Procesado:</b> ${demandados}</div><br><div>${detalle.comentario}</div></div>`,
-                    });
-
-                    if (info.messageId) {
-                        logger.info(`Enviar email - ID: ${proceso_id}.`, `Se envio mensaje << ${info.messageId} >> al correo << ${user.email} >>.`);
-                        await update('procesos_detalle', { sended_at: dateFormat() }, { id: detalle.id });
-                    }
+                    await update('procesos_detalle', { send_notification:true }, { id: detalle.id });
                 }
             }
 
