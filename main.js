@@ -22,5 +22,5 @@ const procesosJudiciales = async () => {
 if (process.env.APP_DEBUG === 'true') {
     procesosJudiciales();
 } else {
-    cron.schedule('*/2 * * * *', procesosJudiciales);
+    cron.schedule('*/59 * * * *', procesosJudiciales);
 }
