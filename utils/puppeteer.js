@@ -20,7 +20,7 @@ const dateFormat = (fecha) => {
 
 const procesarDetalle = async (procesos = []) => {
     const logger = log4js.getLogger('Proceso');
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const page = await browser.newPage();
 
     for (const { proceso_id, judicatura_id, anio_id, numero_id, user_id } of procesos) {
