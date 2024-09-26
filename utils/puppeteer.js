@@ -62,13 +62,13 @@ const procesarDetalle = async (procesos = []) => {
         let movimiento_id = null,
           proceso = null;
         const movimientosCount = await page.$$eval(
-          "div[class='lista-movimientos-causa'] > div[class='cuerpo'] > div",
+          "div[class='lista-movimientos-causa'] > div[class='cuerpo'] > div > div[class='lista-movimiento'] > div",
           (e) => e.length
         );
 
         for (let i = 0; i < movimientosCount; i++) {
           const movimientos = await page.$$(
-            "div[class='lista-movimientos-causa'] > div[class='cuerpo'] > div"
+            "div[class='lista-movimientos-causa'] > div[class='cuerpo'] > div > div[class='lista-movimiento'] > div"
           );
           const movimiento = movimientos[i];
           if (movimiento) {
@@ -101,7 +101,7 @@ const procesarDetalle = async (procesos = []) => {
             proceso = movimientoDato[0];
             accionInfraccion = movimientoDato[4];
             movimiento_id = getUUID(
-              `${proceso}-${numeroIncidente}-${movimientoDato[5]}`
+              `${proceso}-${numeroIncidente}-${fechaIngreso}-${movimientoDato[5]}`
             );
             const movimientoDB = await select(
               `SELECT * FROM procesos_movimiento WHERE proceso_id = ? AND id = ?`,
@@ -117,9 +117,9 @@ const procesarDetalle = async (procesos = []) => {
                 fecha: dateFormat(fechaIngreso),
                 numero_ingreso: numeroIncidente,
                 dependencia_jurisdiccional: movimientoDato[5],
-                actor_ofendido: movimientoDato[6],
+                actor_ofendido: movimientoDato[8] ?? movimientoDato[6],
                 accion_infraccion: accionInfraccion,
-                demandado_procesado: movimientoDato[7],
+                demandado_procesado: movimientoDato[9] ?? movimientoDato[7],
                 created_at: createAt,
                 updated_at: createAt,
               });
@@ -182,7 +182,6 @@ const procesarDetalle = async (procesos = []) => {
         }
 
         page.goBack();
-        // await page.waitForNavigation({ waitUntil: "networkidle0" });
       }
 
       await update(
